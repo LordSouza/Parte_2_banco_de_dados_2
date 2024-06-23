@@ -1,0 +1,8 @@
+# To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
+fastapi>=0.110.0,<0.113.0
+pydantic>=2.7.0,<3.0.0
+uvicorn[standard]==0.27.0
+gunicorn==21.2.0
+sqlalchemy==2.0.31
+psycopg[binary]
+psycopg2-binary
