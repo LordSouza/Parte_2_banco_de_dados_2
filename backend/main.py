@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from repository import (
     select_ameaca,
     select_atributos,
@@ -10,6 +10,8 @@ from repository import (
 from http import HTTPStatus
 import uvicorn
 from utils import calcular_quantidade_de_linhas
+from schemas import Request_Body
+
 app = FastAPI()
 
 
@@ -23,40 +25,18 @@ class Response:
         return {"status": self.status, "message": self.message, "result": self.result}
 
 
-@app.get("/ameacas")
+@app.post("/ameacas")
 def get_ameacas(
-    inicial: int = 0,
-    final: int = 10,
-    orderby: str = "tid",
-    nome: str = None,
-    categoria: str = None,
-    risco: str = None,
-    descricao: str = None,
-    wiki_sumario: str = None,
-    wiki_link: str = None,
-    descontinuado: str = None,
-    hora_atualizado: str = None,
-    hora_visto: str = None,
-    hora_descontinuado: str = None,
-    hora_adicionado: str = None,
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_ameaca(
-            inicial,
-            final,
-            orderby=orderby,
-            nome=nome,
-            categoria=categoria,
-            risco=risco,
-            descricao=descricao,
-            wiki_sumario=wiki_sumario,
-            wiki_link=wiki_link,
-            descontinuado=descontinuado,
-            hora_atualizado=hora_atualizado,
-            hora_visto=hora_visto,
-            hora_descontinuado=hora_descontinuado,
-            hora_adicionado=hora_adicionado,
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
         )
         response = Response(
             HTTPStatus.OK,
@@ -69,18 +49,18 @@ def get_ameacas(
         return response.__dict__()
 
 
-@app.get("/atributos")
+@app.post("/atributos")
 def get_atributos(
-    inicial: int = 0,
-    final: int = 10,
-    orderby: str = "atid",
-    categoria: str = None,
-    descricao: str = None,
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_atributos(
-            inicial, final, orderby=orderby, categoria=categoria, descricao=descricao
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
         )
         response = Response(
             HTTPStatus.OK,
@@ -93,32 +73,22 @@ def get_atributos(
         return response.__dict__()
 
 
-@app.get("/novidades")
+@app.post("/novidades")
 def get_novidades(
-    inicial: int = 0,
-    final: int = 10,
-    orderby: str = "nid",
-    titulo: str = None,
-    canal: str = None,
-    icone: str = None,
-    link: str = None,
-    hora_adicionado: str = None,
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_novidades(
-            inicial,
-            final,
-            orderby=orderby,
-            titulo=titulo,
-            canal=canal,
-            icone=icone,
-            link=link,
-            hora_adicionado=hora_adicionado,
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
         )
         response = Response(
             HTTPStatus.OK,
-            "Novidades retornadas com sucesso",
+            "Atributos retornados com sucesso",
             [item.__dict__ for item in result],
         )
         return response.__dict__()
@@ -127,16 +97,22 @@ def get_novidades(
         return response.__dict__()
 
 
-@app.get("/outrosnomes")
+@app.post("/outrosnomes")
 def get_outrosnomes(
-    inicial: int = 0, final: int = 10, orderby: str = "onid", nomes: str = None
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
-        result = select_outrosnomes(inicial, final, orderby=orderby, nomes=nomes)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
+        result = select_outrosnomes(
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
+        )
         response = Response(
             HTTPStatus.OK,
-            "Outros nomes retornados com sucesso",
+            "Atributos retornados com sucesso",
             [item.__dict__ for item in result],
         )
         return response.__dict__()
@@ -145,30 +121,22 @@ def get_outrosnomes(
         return response.__dict__()
 
 
-@app.get("/relacionados")
+@app.post("/relacionados")
 def get_relacionados(
-    inicial: int = 0,
-    final: int = 10,
-    orderby: str = "relid",
-    nome: str = None,
-    categoria: str = None,
-    risco: str = None,
-    hora_link: str = None,
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_relacionados(
-            inicial,
-            final,
-            orderby=orderby,
-            nome=nome,
-            categoria=categoria,
-            risco=risco,
-            hora_link=hora_link,
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
         )
         response = Response(
             HTTPStatus.OK,
-            "Relacionados retornados com sucesso",
+            "Atributos retornados com sucesso",
             [item.__dict__ for item in result],
         )
         return response.__dict__()
@@ -177,22 +145,22 @@ def get_relacionados(
         return response.__dict__()
 
 
-@app.get("/taticas_e_tecnicas")
+@app.post("/taticas_e_tecnicas")
 def get_taticas_e_tecnicas(
-    inicial: int = 0,
-    final: int = 10,
-    orderby: str = "ttpsid",
-    categoria: str = None,
-    descricao: str = None,
+    request: Request_Body,
 ):
     try:
-        calcular_quantidade_de_linhas(inicial, final)
+        calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_taticas_e_tecnicas(
-            inicial, final, orderby=orderby, categoria=categoria, descricao=descricao
+            request.inicio,
+            request.fim,
+            orderby=request.orderby,
+            filtros=request.filtros,
+            columns=request.columns,
         )
         response = Response(
             HTTPStatus.OK,
-            "Táticas e técnicas retornadas com sucesso",
+            "Atributos retornados com sucesso",
             [item.__dict__ for item in result],
         )
         return response.__dict__()
