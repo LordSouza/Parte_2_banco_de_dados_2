@@ -26,8 +26,6 @@ def get_column(consulta, entidade, columns):
 
 
 def select_ameaca(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -38,12 +36,10 @@ def select_ameaca(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, Ameacas, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
 
 
 def select_atributos(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -54,12 +50,10 @@ def select_atributos(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, Atributos, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
 
 
 def select_novidades(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -70,12 +64,10 @@ def select_novidades(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, Novidades, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
 
 
 def select_outrosnomes(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -86,12 +78,10 @@ def select_outrosnomes(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, Outrosnomes, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
 
 
 def select_relacionados(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -102,12 +92,10 @@ def select_relacionados(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, Relacionados, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
 
 
 def select_taticas_e_tecnicas(
-    inicial,
-    final,
     orderby=None,
     filtros=None,
     columns=None,
@@ -118,4 +106,4 @@ def select_taticas_e_tecnicas(
     consulta = filtrar_atributos(consulta, filtros)
     if columns:
         consulta = get_column(consulta, TaticasETecnicas, columns)
-    return consulta.slice(inicial, final).all()
+    return consulta
