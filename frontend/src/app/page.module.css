@@ -56,12 +56,20 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 13rem;
+  width: 15rem;
   background-color: whitesmoke;
 }
 
 .divBodyOpcoes1Tabelas, .divBodyOpcoes1Funcoes {
   height: 50%;
+  height: 20rem; /* Define a altura fixa da div */
+  overflow-y: auto; /* Adiciona a barra de rolagem vertical se o conteúdo exceder a altura */
+}
+
+.divBodyOpcoes2FiltroCheck {
+  height: 50%;
+  height: 20rem; /* Define a altura fixa da div */
+  overflow-y: auto; /* Adiciona a barra de rolagem vertical se o conteúdo exceder a altura */
 }
 
 .divBodyTitle {
@@ -76,12 +84,41 @@
 }
 
 .listaAtributosTabela, .listaAtributosFuncoes, .listaAtributosFiltro {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
   list-style: none;
-  padding: 0.8rem 0.5rem 0rem 0.6rem;
+  padding: 0.5rem 0.3rem 0 0.4rem;
   margin: 0;
 }
 
-.listaAtributosTabelaItem, .listaAtributosFuncoesItem, .listaAtributosFiltroItem {
+.listaAtributosTabelaItem, .listaAtributosFiltroItem {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.4rem;
+}
+
+.listaAtributosFuncoesItem{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.listaAtributosFuncoesItemLabel{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+
+.divlistaAtributosTabelaItemLabel{
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -89,10 +126,11 @@
   margin-bottom: 0.4rem;
 }
 
-.listaAtributosTabelaItemLabel, .listaAtributosFuncoesItemLabel, .listaAtributosFiltroItemLabel {
+.listaAtributosTabelaItemLabel, .listaAtributosFiltroItemLabel {
   display: flex;
   flex-direction: row;
   align-items: center;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .listaAtributosTabelaItemInput, .listaAtributosFuncoesItemInput, .listaAtributosFiltroItemInput {
@@ -103,15 +141,53 @@
   border-radius: 0.2rem;
 }
 
-.listaAtributosTabelaItemInput:checked,
-.listaAtributosFuncoesItemInput:checked,
-.listaAtributosFiltroItemInput:checked {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+.divAtributosAmeacas {
+  width: 13.5rem;
+  height: 5rem; /* Define a altura fixa da div */
+  overflow-y: auto; /* Adiciona a barra de rolagem vertical se o conteúdo exceder a altura */
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.2rem;
+}
+
+.listaAtributosTabelaAmeacas{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listaAtributosTabelaItemAmeaca{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.2rem 0.1rem 0;
+}
+
+.listaAtributosTabelaItemLabelAmeacas{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  font-size: 0.9rem;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.listaAtributosTabelaItemInputAmeacas{
+  width: 1rem; 
+  height: 1rem; 
+  cursor: pointer;
   border: 0.01rem solid gray;
   border-radius: 0.2rem;
-  background-color: rgba(6, 139, 149, 0.36);
+  margin-right: 0.2rem;
 }
 
 .divBodyOpcoes2 {
@@ -150,7 +226,7 @@
   padding: 0 0.5rem;
 }
 
-.buttonGerar{
+.buttonGerar {
   margin: 7rem 1rem 0;
   height: 2rem;
   border: 0.01rem solid #000;
@@ -162,7 +238,19 @@
   padding: 0 0.5rem;
 }
 
-.buttonGerar:hover {
+.buttonDownload {
+  margin: 1rem 1rem;
+  height: 2rem;
+  border: 0.01rem solid #000;
+  border-radius: 0.3rem;
+  background-color: rgba(6, 139, 149, 0.36);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  padding: 0 0.5rem;
+}
+
+.buttonGerar:hover, .buttonDownload:hover {
   font-weight: 600;
   background: rgb(6,139,149);
   background: linear-gradient(40deg, rgba(6,139,149,1) 0%, rgba(21,168,170,1) 45%, rgba(0,222,152,1) 100%);
