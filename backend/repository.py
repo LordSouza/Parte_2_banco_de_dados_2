@@ -22,11 +22,10 @@ def get_model(consulta: query.Query, model, tables: list[str]):
     # list comprehension para pegar a classe do model
     model_list = [mod for mod in model_list if mod.__name__ in tables]
     # pegar a chave primaria
-    primary_key = model.__table__.primary_key.columns.keys()[0]
     # fazer o join
     for mod in model_list:
         consulta = consulta.join(
-            mod, getattr(mod, primary_key) == getattr(model, primary_key)
+            mod, getattr(mod, "tid") == getattr(model, "tid")
         )
         consulta = get_column_join(consulta, mod, [])
     return consulta
