@@ -31,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class Response:
     def __init__(self, status: HTTPStatus, message: str, result: list = []):
         self.status = status
