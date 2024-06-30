@@ -11,10 +11,9 @@ from repository import (
 )
 from http import HTTPStatus
 import uvicorn
-from utils import calcular_quantidade_de_linhas
+from utils import calcular_quantidade_de_linhas, column_name
 from schemas import Request_Body
 from fastapi.responses import StreamingResponse
-import os
 
 app = FastAPI()
 
@@ -29,10 +28,6 @@ class Response:
         return {"status": self.status, "message": self.message, "result": self.result}
 
 
-def remove_file(path: str) -> None:
-    os.unlink(path)
-
-
 @app.post("/ameacas")
 def get_ameacas(
     request: Request_Body,
@@ -42,6 +37,7 @@ def get_ameacas(
         result = (
             select_ameaca(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -51,7 +47,7 @@ def get_ameacas(
         response = Response(
             HTTPStatus.OK,
             "Ameaças retornadas com sucesso",
-            [item.__dict__ for item in result],
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -67,6 +63,7 @@ def get_ameacas_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_ameaca(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
         )
@@ -90,6 +87,7 @@ def get_atributos(
         result = (
             select_atributos(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -98,8 +96,8 @@ def get_atributos(
         )
         response = Response(
             HTTPStatus.OK,
-            "Atributos retornados com sucesso",
-            [item.__dict__ for item in result],
+            "Atributos retornadas com sucesso",
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -115,13 +113,14 @@ def get_atributos_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_atributos(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
-        ).all()
+        )
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="ameacas.xlsx"'}
+        headers = {"Content-Disposition": 'attachment; filename="atributos.xlsx"'}
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
@@ -138,6 +137,7 @@ def get_novidades(
         result = (
             select_novidades(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -146,8 +146,8 @@ def get_novidades(
         )
         response = Response(
             HTTPStatus.OK,
-            "Novidades retornados com sucesso",
-            [item.__dict__ for item in result],
+            "Novidades retornadas com sucesso",
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -163,13 +163,14 @@ def get_novidades_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_novidades(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
-        ).all()
+        )
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="ameacas.xlsx"'}
+        headers = {"Content-Disposition": 'attachment; filename="novidades.xlsx"'}
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
@@ -186,6 +187,7 @@ def get_outrosnomes(
         result = (
             select_outrosnomes(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -194,8 +196,8 @@ def get_outrosnomes(
         )
         response = Response(
             HTTPStatus.OK,
-            "Outrosnomes retornados com sucesso",
-            [item.__dict__ for item in result],
+            "OutrosNomes retornadas com sucesso",
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -211,13 +213,14 @@ def get_outrosnomes_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_outrosnomes(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
-        ).all()
+        )
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="ameacas.xlsx"'}
+        headers = {"Content-Disposition": 'attachment; filename="outrosnomes.xlsx"'}
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
@@ -234,6 +237,7 @@ def get_relacionados(
         result = (
             select_relacionados(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -242,8 +246,8 @@ def get_relacionados(
         )
         response = Response(
             HTTPStatus.OK,
-            "Relacionados retornados com sucesso",
-            [item.__dict__ for item in result],
+            "Relacionados retornadas com sucesso",
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -259,13 +263,14 @@ def get_relacionados_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_relacionados(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
-        ).all()
+        )
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="ameacas.xlsx"'}
+        headers = {"Content-Disposition": 'attachment; filename="relacionados.xlsx"'}
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
@@ -282,6 +287,7 @@ def get_taticas_e_tecnicas(
         result = (
             select_taticas_e_tecnicas(
                 orderby=request.orderby,
+                tables=request.tables,
                 filtros=request.filtros,
                 columns=request.columns,
             )
@@ -290,8 +296,8 @@ def get_taticas_e_tecnicas(
         )
         response = Response(
             HTTPStatus.OK,
-            "Taticas e Tecnicas retornados com sucesso",
-            [item.__dict__ for item in result],
+            "Taticas e Tecnicas retornadas com sucesso",
+            [dict(zip(column_name(item), item)) for item in result],
         )
         return response.__dict__()
     except Exception as e:
@@ -307,13 +313,14 @@ def get_taticas_e_tecnicas_excel(
         calcular_quantidade_de_linhas(request.inicio, request.fim)
         result = select_taticas_e_tecnicas(
             orderby=request.orderby,
+            tables=request.tables,
             filtros=request.filtros,
             columns=request.columns,
-        ).all()
+        )
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="ameacas.xlsx"'}
+        headers = {"Content-Disposition": 'attachment; filename="taticas_e_tecnicas.xlsx"'}
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
