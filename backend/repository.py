@@ -11,7 +11,6 @@ from sqlalchemy import (
     Date,
     Enum,
     Integer,
-    func
 )
 from sqlalchemy.orm import query
 import datetime
@@ -25,13 +24,15 @@ def get_model(consulta: query.Query, model, tables: list[str]):
         Relacionados,
         TaticasETecnicas,
     ]
-    # list comprehension para pegar a classe do model
-    model_list = [mod for mod in model_list if mod.__name__ in tables]
-    # pegar a chave primaria
+    # pegar os atributos de acordo com a model list
+    model_list = [mod for mod in model_list if mod.__name__ in tables.keys()]
+    for m in model_list:
+        for key, values in tables.items():
+            if key == m.__name__:
+                consulta = get_column_join(consulta, m, values)
     # fazer o join
     for mod in model_list:
         consulta = consulta.join(mod, getattr(mod, "tid") == getattr(model, "tid"))
-        consulta = get_column_join(consulta, mod, [])
     return consulta
 
 
@@ -51,7 +52,9 @@ def filtrar_atributos(
     for coluna, filtro in filtros.items():
         atrib = getattr(Ameacas, coluna)
         if type(atrib.type) == Date:
-            query = query.filter(atrib == datetime.datetime.strptime(filtro, "%Y-%m-%d"))
+            query = query.filter(
+                atrib == datetime.datetime.strptime(filtro, "%Y-%m-%d")
+            )
         elif type(atrib.type) == Integer:
             query = query.filter(atrib == int(filtro))
         elif type(atrib.type) == Enum:
