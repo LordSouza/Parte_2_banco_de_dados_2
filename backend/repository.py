@@ -11,9 +11,10 @@ from sqlalchemy import (
     Date,
     Enum,
     Integer,
+    func
 )
 from sqlalchemy.orm import query
-
+import datetime
 
 def get_model(consulta: query.Query, model, tables: list[str]):
     model_list = [
@@ -47,11 +48,10 @@ def filtrar_atributos(
     query,
     filtros,
 ):
-    # TODO tratar inteiros, datas e outros tipos de dados
     for coluna, filtro in filtros.items():
         atrib = getattr(Ameacas, coluna)
         if type(atrib.type) == Date:
-            query.filter(atrib == filtro)
+            query = query.filter(atrib == datetime.datetime.strptime(filtro, "%Y-%m-%d"))
         elif type(atrib.type) == Integer:
             query = query.filter(atrib == int(filtro))
         elif type(atrib.type) == Enum:
