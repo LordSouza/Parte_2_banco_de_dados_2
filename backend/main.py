@@ -14,9 +14,22 @@ import uvicorn
 from utils import calcular_quantidade_de_linhas, column_name
 from schemas import Request_Body
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Response:
     def __init__(self, status: HTTPStatus, message: str, result: list = []):
@@ -320,7 +333,9 @@ def get_taticas_e_tecnicas_excel(
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="taticas_e_tecnicas.xlsx"'}
+        headers = {
+            "Content-Disposition": 'attachment; filename="taticas_e_tecnicas.xlsx"'
+        }
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:

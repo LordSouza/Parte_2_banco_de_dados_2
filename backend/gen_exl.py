@@ -2,6 +2,7 @@ import xlsxwriter
 import datetime
 from utils import columns_name
 
+
 def generate_excel(result, output):
     # escrever os nomes das colunas
 
@@ -20,9 +21,7 @@ def generate_excel(result, output):
     for model in consulta:
         for i in model:
             if type(i) == datetime.date:
-                worksheet.write(
-                    linha, coluna, i, date_format
-                )
+                worksheet.write(linha, coluna, i, date_format)
             else:
                 worksheet.write(linha, coluna, i)
             coluna += 1
