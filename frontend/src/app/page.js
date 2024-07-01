@@ -13,10 +13,24 @@ export default function Home() {
   const [responseData, setResponseData] = useState([]);
   const [keys, setKeys] = useState([]);
   const [values, setValues] = useState([]);
+  const [orderby, setOrderby] = useState(null);
   const [tables, setTables] = useState({});
+  const [remainingAtributos, setRemainingAtributos] = useState([]);
   const [filters, setFilters] = useState({});
   const [currentFilter, setCurrentFilter] = useState("");
+  const [selectedAttribute, setSelectedAttribute] = useState("");
 
+
+  const handleCheckboxFilter = (event) => {
+    const { id, checked } = event.target;
+    if (checked) {
+      const parts = id.split('-');
+      const attributeName = parts.slice(1).join('-');
+      setSelectedAttribute(attributeName);
+    } else {
+      setSelectedAttribute("");
+    }
+  };
 
   const handleCheckboxChange = (event) => {
     const { id, checked } = event.target;
@@ -61,116 +75,98 @@ export default function Home() {
   };
 
   const handleApplyFilter = () => {
-    const selectedAtributo = selectedAtributos.find(attr => attr);
-    if (selectedAtributo) {
-      const parts = selectedAtributo.split('-');
-      const atributoName = parts.slice(1).join('-');
+    if (selectedAttribute && currentFilter) {
       setFilters(prevFilters => ({
         ...prevFilters,
-        [atributoName]: currentFilter
+        [selectedAttribute]: currentFilter
       }));
       setCurrentFilter("");
     }
   };
-  
-  
 
+  const distributeAtributos = (updatedSelectedAtributos) => {
+    let newRemainingAtributos = [...updatedSelectedAtributos];
+    const newTables = {};
+  
+    secondaryTables.forEach(table => {
+      const atributosForTable = newRemainingAtributos
+        .filter(atributo => atributo.startsWith(`${table}-`))
+        .map(atributo => {
+          const parts = atributo.split('-');
+          return parts.slice(1).join('-');
+        });
+  
+      newRemainingAtributos = newRemainingAtributos.filter(atributo => !atributo.startsWith(`${table}-`));
+  
+      if (atributosForTable.length > 0) {
+        newTables[table] = atributosForTable;
+      }
+    });
+  
+    const remainingAtributosFinal = newRemainingAtributos.map(atributo => {
+      const parts = atributo.split('-');
+      return parts.slice(1).join('-'); 
+    });
+  
+    setRemainingAtributos(remainingAtributosFinal);
+    setTables(newTables);
+  };
+  
+  
   const handleCheckboxChangeAtributos = (event) => {
     const { id, checked } = event.target;
-    setSelectedAtributos((prevSelectedAtributos) => {
-      const updatedAtributos = checked
-        ? [...prevSelectedAtributos, id]
-        : prevSelectedAtributos.filter((atributo) => atributo !== id);
+    let updatedSelectedAtributos;
   
-      extractAtributoNomes(updatedAtributos);
-      updateTablesState(id, checked);
+    if (checked) {
+      updatedSelectedAtributos = [...selectedAtributos, id];
+    } else {
+      updatedSelectedAtributos = selectedAtributos.filter(atributo => atributo !== id);
+    }
   
-      return updatedAtributos;
-    });
-  };
+    setSelectedAtributos(updatedSelectedAtributos);
+    distributeAtributos(updatedSelectedAtributos);
+  }; 
 
-  const updateTablesState = (atributo, checked) => {
-    const [table, attr] = atributo.split('-');
-    setTables((prevTables) => {
-      const updatedTables = { ...prevTables };
-      if (checked) {
-        if (!updatedTables[table]) {
-          updatedTables[table] = [];
-        }
-        updatedTables[table].push(attr);
-      } else {
-        if (updatedTables[table]) {
-          updatedTables[table] = updatedTables[table].filter(a => a !== attr);
-          if (updatedTables[table].length === 0) {
-            delete updatedTables[table];
-          }
-        }
-      }
-      return updatedTables;
-    });
+  const handleOrderbyChange = (event) => {
+    const { id, checked } = event.target;
+  
+    if (checked) {
+      const parts = id.split('-');
+      const atributoName = parts.slice(1).join('-');
+      setOrderby(atributoName);
+    } else {
+      setOrderby(null);
+    }
   };
-  
-  
 
   useEffect(() => {
+    distributeAtributos(selectedAtributos);
     extractAtributoNomes();
   }, [selectedAtributos]);
-
+  
   const extractAtributoNomes = () => {
-    const nomes = selectedAtributos.map((atributo) => {
+    const nomes = remainingAtributos.map((atributo) => {
       const parts = atributo.split('-');
       return parts.length > 1 ? parts.slice(1).join('-') : atributo;
     });
     setAtributoNomes(nomes);
   };
+  
 
   const handleSubmit = async () => {
     if (!primaryTable) {
       setError("Sem tabela principal");
       return;
     }
-
-    let remainingAtributos = [...selectedAtributos];
-    console.log('Initial remainingAtributos:', remainingAtributos);
-
-    const tables = {};
-    secondaryTables.forEach(table => {
-
-      const atributosForTable = remainingAtributos
-        .filter(atributo => atributo.startsWith(`${table}-`))
-        .map(atributo => {
-          const parts = atributo.split('-');
-          return parts.slice(1).join('-');
-        });
-
-      remainingAtributos = remainingAtributos.filter(atributo => !atributo.startsWith(`${table}-`));
-      console.log(`After processing table ${table}, remainingAtributos:`, remainingAtributos);
-
-      if (atributosForTable.length > 0) {
-        tables[table] = atributosForTable;
-      }
-
-      console.log(`Attributes for table ${table}:`, atributosForTable);
-    });
-
-    remainingAtributos = remainingAtributos.map(atributo => {
-      const parts = atributo.split('-');
-      return parts.slice(1).join('-'); 
-    });
-
-    console.log('Final remainingAtributos:', remainingAtributos);
-    console.log('Tables object:', tables);
   
     const requestData = {
-      orderby: 'tid',
+      orderby: orderby,
       tables: tables,
       filtros: filters,
       columns: remainingAtributos,
       inicio: 0,
       fim: 10
     };
-  
-    console.log(requestData);
   
     try {
       const response = await axios.post(
@@ -184,12 +180,11 @@ export default function Home() {
         }
       );
       setResponseData(response.data);
-      console.log(response.data)
       const formattedData = formatResponseData(response.data);
       setKeys(formattedData.keys);
       setValues(formattedData.values);
     } catch (error) {
-      console.log(error.message)
+      console.log(error.message);
     }
   };
 
@@ -217,50 +212,14 @@ export default function Home() {
       return;
     }
   
-    const filtros = {};
-  
-
-    let remainingAtributos = [...selectedAtributos];
-    console.log('Initial remainingAtributos:', remainingAtributos);
-  
-    const tables = {};
-    secondaryTables.forEach(table => {
-
-      const atributosForTable = remainingAtributos
-        .filter(atributo => atributo.startsWith(`${table}-`))
-        .map(atributo => {
-          const parts = atributo.split('-');
-          return parts.slice(1).join('-');
-        });
-
-      remainingAtributos = remainingAtributos.filter(atributo => !atributo.startsWith(`${table}-`));
-      console.log(`After processing table ${table}, remainingAtributos:`, remainingAtributos);
-
-      if (atributosForTable.length > 0) {
-        tables[table] = atributosForTable;
-      }
-  
-      console.log(`Attributes for table ${table}:`, atributosForTable);
-    });
-  
-    remainingAtributos = remainingAtributos.map(atributo => {
-      const parts = atributo.split('-');
-      return parts.slice(1).join('-'); 
-    });
-  
-    console.log('Final remainingAtributos:', remainingAtributos);
-    console.log('Tables object:', tables);
-  
     const requestData = {
-      orderby: 'tid',
+      orderby: orderby,
       tables: tables,
-      filtros: filtros,
+      filtros: filters,
       columns: remainingAtributos,
       inicio: 0,
       fim: 100
     };
-  
-    console.log('Request data:', requestData);
   
     try {
       const response = await axios.post(
@@ -459,23 +418,23 @@ export default function Home() {
                         </li>
                         <li className={styles.listaAtributosTabelaItem}>
                           <div className={styles.divlistaAtributosTabelaItemLabel}>
-                            <label htmlFor="taticasETecnicas" className={styles.listaAtributosTabelaItemLabel}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z"/></svg> Taticas_e_Tecnicas </label>
-                            <input type="checkbox" id="taticasETecnicas" className={styles.listaAtributosTabelaItemInput} onChange={handleCheckboxChange}/>
+                            <label htmlFor="taticas_e_tecnicas" className={styles.listaAtributosTabelaItemLabel}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z"/></svg> Taticas_e_Tecnicas </label>
+                            <input type="checkbox" id="taticas_e_tecnicas" className={styles.listaAtributosTabelaItemInput} onChange={handleCheckboxChange}/>
                           </div>
-                          {selectedTables.includes('taticasETecnicas') && (
+                          {selectedTables.includes('taticas_e_tecnicas') && (
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> ttpsid </label>
-                                <input type="checkbox" id="taticasETecnicas-ttpsid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticas_e_tecnicas-ttpsid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> categoria </label>
-                                <input type="checkbox" id="taticasETecnicas-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticas_e_tecnicas-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> descricao </label>
-                                <input type="checkbox" id="taticasETecnicas-descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticas_e_tecnicas-descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="taticasETecnicas-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticas_e_tecnicas-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -485,10 +444,10 @@ export default function Home() {
                   </div>
                 </div>
                 <h2 className={styles.divBodyTitle}>Funções</h2>
-                <div className={styles.divBodyOpcoes1Funcoes}>
+              <div className={styles.divBodyOpcoes1Funcoes}>
                 <div className={styles.divNomeTabelas}>
                   <ul className={styles.listaAtributosTabela}>
-                    {['count', 'countDis', 'sum', 'max', 'min', 'avg'].map((func) => (
+                    {['orderby'].map((func) => (
                       <li className={styles.listaAtributosTabelaItem} key={func}>
                         <div className={styles.divlistaAtributosTabelaItemLabel}>
                           <label htmlFor={func} className={styles.listaAtributosFuncoesItemLabel}>
@@ -509,8 +468,20 @@ export default function Home() {
                           <div className={styles.divAtributosAmeacas}>
                             <ul className={styles.listaAtributosTabelaAmeacas}>
                               {atributoNomes.map((nome) => (
-                                <li className={styles.listaAtributosTabelaItemLabelAmeacas} key={nome}><label htmlFor="atributosSelecionados" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> {nome} </label>
-                                <input type="checkbox" id="atributosSelecionados" className={styles.listaAtributosTabelaItemInputAmeacas}/>
+                                <li className={styles.listaAtributosTabelaItemLabelAmeacas} key={nome}>
+                                  <label htmlFor={nome} className={styles.listaAtributosTabelaItemLabelAmeacas}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95">
+                                      <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/>
+                                    </svg> 
+                                    {nome}
+                                  </label>
+                                  <input
+                                    type="checkbox"
+                                    id={`orderby-${nome}`}
+                                    className={styles.listaAtributosTabelaItemInputAmeacas}
+                                    onChange={handleOrderbyChange}
+                                    checked={orderby === nome}
+                                  />
                                 </li>
                               ))}
                             </ul>
@@ -552,7 +523,7 @@ export default function Home() {
                         <li className={styles.listaAtributosTabelaItem} key={nome}>
                           <div className={styles.divlistaAtributosTabelaItemLabel}>
                             <label htmlFor="atributosSelecionados" className={styles.listaAtributosFuncoesItemLabel}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> {nome} </label>
-                          <input type="checkbox" id="atributosSelecionados" className={styles.listaAtributosTabelaItemInput}/>
+                          <input type="checkbox" id ={`atributo-${nome}`} onChange={handleCheckboxFilter} checked={selectedAttribute === nome} className={styles.listaAtributosTabelaItemInput}/>
                           </div>
                         </li>
                       ))}
