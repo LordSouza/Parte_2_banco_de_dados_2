@@ -15,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import query
 import datetime
 
-def get_model(consulta: query.Query, model, tables: list[str]):
+def get_model(consulta: query.Query, model, tables: dict[str, list[str]]):
     model_list = [
         Ameacas,
         Atributos,
