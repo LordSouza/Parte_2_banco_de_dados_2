@@ -1,0 +1,340 @@
+{
+	"info": {
+		"_postman_id": "6f07f9ed-23ac-47ad-b65d-a1a9613b836b",
+		"name": "Banco de dados 2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29771180"
+	},
+	"item": [
+		{
+			"name": "localhost:8000/ameacas",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [\"tid\",\"nome\"],\r\n    \"tables\": {\"Outrosnomes\":[\"nomes\"]},\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/ameacas",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"ameacas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/ameacas/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/ameacas/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"ameacas",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/atributos",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": { },\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/atributos",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"atributos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/atributos/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/atributos/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"atributos",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/novidades",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": { },\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/novidades",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"novidades"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/novidades/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/novidades/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"novidades",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/outrosnomes",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": { },\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/outrosnomes",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"outrosnomes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/outrosnomes/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/outrosnomes/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"outrosnomes",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/relacionados",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": { },\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/relacionados",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"relacionados"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/relacionados/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/relacionados/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"relacionados",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/taticas_e_tecnicas",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": { },\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/taticas_e_tecnicas",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"taticas_e_tecnicas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8000/taticas_e_tecnicas/excel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"columns\": [],\r\n    \"tables\": [],\r\n    \"orderby\": \"\",\r\n    \"filtros\": {},\r\n    \"inicio\": 0,\r\n    \"fim\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/taticas_e_tecnicas/excel",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"taticas_e_tecnicas",
+						"excel"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

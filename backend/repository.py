@@ -7,8 +7,13 @@ from model import (
     TaticasETecnicas,
     get_db,
 )
+from sqlalchemy import (
+    Date,
+    Enum,
+    Integer,
+)
 from sqlalchemy.orm import query
-
+import datetime
 
 def get_model(consulta: query.Query, model, tables: list[str]):
     model_list = [
@@ -19,15 +24,15 @@ def get_model(consulta: query.Query, model, tables: list[str]):
         Relacionados,
         TaticasETecnicas,
     ]
-    # list comprehension para pegar a classe do model
-    model_list = [mod for mod in model_list if mod.__name__ in tables]
-    # pegar a chave primaria
+    # pegar os atributos de acordo com a model list
+    model_list = [mod for mod in model_list if mod.__name__ in tables.keys()]
+    for m in model_list:
+        for key, values in tables.items():
+            if key == m.__name__:
+                consulta = get_column_join(consulta, m, values)
     # fazer o join
     for mod in model_list:
-        consulta = consulta.join(
-            mod, getattr(mod, "tid") == getattr(model, "tid")
-        )
-        consulta = get_column_join(consulta, mod, [])
+        consulta = consulta.join(mod, getattr(mod, "tid") == getattr(model, "tid"))
     return consulta
 
 
@@ -45,7 +50,17 @@ def filtrar_atributos(
     filtros,
 ):
     for coluna, filtro in filtros.items():
-        query = query.filter(getattr(Ameacas, coluna).like(f"%{filtro}%"))
+        atrib = getattr(Ameacas, coluna)
+        if type(atrib.type) == Date:
+            query = query.filter(
+                atrib == datetime.datetime.strptime(filtro, "%Y-%m-%d")
+            )
+        elif type(atrib.type) == Integer:
+            query = query.filter(atrib == int(filtro))
+        elif type(atrib.type) == Enum:
+            query = query.filter(atrib == filtro)
+        else:
+            query = query.filter(atrib.like(f"%{filtro}%"))
     return query
 
 
@@ -59,7 +74,8 @@ def get_column(session, model, columns):
     return consulta
 
 
-def select_ameaca(
+def realizar_consulta(
+    model,
     orderby=None,
     tables=None,
     filtros=None,
@@ -67,18 +83,29 @@ def select_ameaca(
 ):
     db = next(get_db())
     # pegar as colunas
-    consulta = get_column(db, Ameacas, columns)
+    consulta = get_column(db, model, columns)
     # dar order by
     if orderby == "":
-        consulta = consulta.order_by(getattr(Ameacas, Ameacas.__table__.primary_key.columns.keys()[0]))
+        consulta = consulta.order_by(
+            getattr(model, model.__table__.primary_key.columns.keys()[0])
+        )
     else:
-        consulta = consulta.order_by(getattr(Ameacas, orderby))
+        consulta = consulta.order_by(getattr(model, orderby))
     # fazer join
-    consulta = get_model(consulta, Ameacas, tables)
+    consulta = get_model(consulta, model, tables)
     # fazer filtros
     consulta = filtrar_atributos(consulta, filtros)
 
     return consulta
+
+
+def select_ameaca(
+    orderby=None,
+    tables=None,
+    filtros=None,
+    columns=None,
+):
+    return realizar_consulta(Ameacas, orderby, tables, filtros, columns)
 
 
 def select_atributos(
@@ -87,20 +114,7 @@ def select_atributos(
     filtros=None,
     columns=None,
 ):
-    db = next(get_db())
-    # pegar as colunas
-    consulta = get_column(db, Atributos, columns)
-    # dar order by
-    if orderby == "":
-        consulta = consulta.order_by(getattr(Atributos, Atributos.__table__.primary_key.columns.keys()[0]))
-    else:
-        consulta = consulta.order_by(getattr(Atributos, orderby))
-    # fazer join
-    consulta = get_model(consulta, Atributos, tables)
-    # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
-
-    return consulta
+    return realizar_consulta(Atributos, orderby, tables, filtros, columns)
 
 
 def select_novidades(
@@ -109,20 +123,8 @@ def select_novidades(
     filtros=None,
     columns=None,
 ):
-    db = next(get_db())
-    # pegar as colunas
-    consulta = get_column(db, Novidades, columns)
-    # dar order by
-    if orderby == "":
-        consulta = consulta.order_by(getattr(Novidades, Novidades.__table__.primary_key.columns.keys()[0]))
-    else:
-        consulta = consulta.order_by(getattr(Novidades, orderby))
-    # fazer join
-    consulta = get_model(consulta, Novidades, tables)
-    # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
+    return realizar_consulta(Novidades, orderby, tables, filtros, columns)
 
-    return consulta
 
 def select_outrosnomes(
     orderby=None,
@@ -130,20 +132,7 @@ def select_outrosnomes(
     filtros=None,
     columns=None,
 ):
-    db = next(get_db())
-    # pegar as colunas
-    consulta = get_column(db, Outrosnomes, columns)
-    # dar order by
-    if orderby == "":
-        consulta = consulta.order_by(getattr(Outrosnomes, Outrosnomes.__table__.primary_key.columns.keys()[0]))
-    else:
-        consulta = consulta.order_by(getattr(Outrosnomes, orderby))
-    # fazer join
-    consulta = get_model(consulta, Outrosnomes, tables)
-    # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
-
-    return consulta
+    return realizar_consulta(Outrosnomes, orderby, tables, filtros, columns)
 
 
 def select_relacionados(
@@ -152,20 +141,7 @@ def select_relacionados(
     filtros=None,
     columns=None,
 ):
-    db = next(get_db())
-    # pegar as colunas
-    consulta = get_column(db, Relacionados, columns)
-    # dar order by
-    if orderby == "":
-        consulta = consulta.order_by(getattr(Relacionados, Relacionados.__table__.primary_key.columns.keys()[0]))
-    else:
-        consulta = consulta.order_by(getattr(Relacionados, orderby))
-    # fazer join
-    consulta = get_model(consulta, Relacionados, tables)
-    # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
-
-    return consulta
+    return realizar_consulta(Relacionados, orderby, tables, filtros, columns)
 
 
 def select_taticas_e_tecnicas(
@@ -174,17 +150,4 @@ def select_taticas_e_tecnicas(
     filtros=None,
     columns=None,
 ):
-    db = next(get_db())
-    # pegar as colunas
-    consulta = get_column(db, TaticasETecnicas, columns)
-    # dar order by
-    if orderby == "":
-        consulta = consulta.order_by(getattr(TaticasETecnicas, TaticasETecnicas.__table__.primary_key.columns.keys()[0]))
-    else:
-        consulta = consulta.order_by(getattr(TaticasETecnicas, orderby))
-    # fazer join
-    consulta = get_model(consulta, TaticasETecnicas, tables)
-    # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
-
-    return consulta
+    return realizar_consulta(TaticasETecnicas, orderby, tables, filtros, columns)

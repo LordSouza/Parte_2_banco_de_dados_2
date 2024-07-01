@@ -15,6 +15,7 @@ def column_name(item):
     for column in columns:
         yield f"{column.table.name}.{column.name}"
 
+
 def columns_name(item):
     columns = [i for i in item._key_to_index if type(i) == annotation.AnnotatedColumn]
     list_names = []

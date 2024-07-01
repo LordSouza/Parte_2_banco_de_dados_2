@@ -19,7 +19,8 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000", 
+    "http://localhost",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
@@ -333,7 +334,9 @@ def get_taticas_e_tecnicas_excel(
         output = BytesIO()
         generate_excel(result, output)
         output.seek(0)
-        headers = {"Content-Disposition": 'attachment; filename="taticas_e_tecnicas.xlsx"'}
+        headers = {
+            "Content-Disposition": 'attachment; filename="taticas_e_tecnicas.xlsx"'
+        }
         return StreamingResponse(output, headers=headers)
 
     except Exception as e:
