@@ -1,5 +1,4 @@
 'use client'
-import Image from "next/image";
 import styles from "./page.module.css";
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -20,21 +19,20 @@ export default function Home() {
     const { id, checked } = event.target;
   
     setSelectedTables((prevSelectedTables) => {
-      // Verificar si es una tabla secundaria
+
       const isSecondaryTable = primaryTable !== null && primaryTable !== id;
   
       if (checked) {
         if (isSecondaryTable) {
-          // Agregar tabla secundaria
+
           setSecondaryTables((prevSecondaryTables) => [...prevSecondaryTables, id]);
         } else {
-          // Establecer como tabla primaria si no hay tabla primaria seleccionada
           setPrimaryTable(id);
         }
         return [...prevSelectedTables, id];
       } else {
         if (primaryTable === id) {
-          // Desseleccionar tabla primaria
+
           setPrimaryTable(null);
           const updatedTables = prevSelectedTables.filter((table) => table !== id);
           if (updatedTables.length > 0) {
@@ -42,7 +40,7 @@ export default function Home() {
             setSecondaryTables(updatedTables.slice(1));
           }
         } else {
-          // Desseleccionar tabla secundaria
+
           setSecondaryTables((prevSecondaryTables) =>
             prevSecondaryTables.filter((table) => table !== id)
           );
@@ -89,12 +87,43 @@ export default function Home() {
     }
 
     const filtros = {};
+
+    let remainingAtributos = [...selectedAtributos];
+    console.log('Initial remainingAtributos:', remainingAtributos);
+
+    const tables = {};
+    secondaryTables.forEach(table => {
+
+      const atributosForTable = remainingAtributos
+        .filter(atributo => atributo.startsWith(`${table}-`))
+        .map(atributo => {
+          const parts = atributo.split('-');
+          return parts.slice(1).join('-');
+        });
+
+      remainingAtributos = remainingAtributos.filter(atributo => !atributo.startsWith(`${table}-`));
+      console.log(`After processing table ${table}, remainingAtributos:`, remainingAtributos);
+
+      if (atributosForTable.length > 0) {
+        tables[table] = atributosForTable;
+      }
+
+      console.log(`Attributes for table ${table}:`, atributosForTable);
+    });
+
+    remainingAtributos = remainingAtributos.map(atributo => {
+      const parts = atributo.split('-');
+      return parts.slice(1).join('-'); 
+    });
+
+    console.log('Final remainingAtributos:', remainingAtributos);
+    console.log('Tables object:', tables);
   
     const requestData = {
       orderby: 'tid',
-      tables: secondaryTables,
+      tables: tables,
       filtros: filtros,
-      columns: selectedAtributos,
+      columns: remainingAtributos,
       inicio: 0,
       fim: 10
     };
@@ -113,6 +142,7 @@ export default function Home() {
         }
       );
       setResponseData(response.data);
+      console.log(response.data)
       const formattedData = formatResponseData(response.data);
       setKeys(formattedData.keys);
       setValues(formattedData.values);
@@ -139,6 +169,81 @@ export default function Home() {
     return { keys: modifiedKeys, values };
   };
 
+  const handleSubmitExcel = async () => {
+    if (!primaryTable) {
+      setError("Sem tabela principal");
+      return;
+    }
+  
+    const filtros = {};
+  
+
+    let remainingAtributos = [...selectedAtributos];
+    console.log('Initial remainingAtributos:', remainingAtributos);
+  
+    const tables = {};
+    secondaryTables.forEach(table => {
+
+      const atributosForTable = remainingAtributos
+        .filter(atributo => atributo.startsWith(`${table}-`))
+        .map(atributo => {
+          const parts = atributo.split('-');
+          return parts.slice(1).join('-');
+        });
+
+      remainingAtributos = remainingAtributos.filter(atributo => !atributo.startsWith(`${table}-`));
+      console.log(`After processing table ${table}, remainingAtributos:`, remainingAtributos);
+
+      if (atributosForTable.length > 0) {
+        tables[table] = atributosForTable;
+      }
+  
+      console.log(`Attributes for table ${table}:`, atributosForTable);
+    });
+  
+    remainingAtributos = remainingAtributos.map(atributo => {
+      const parts = atributo.split('-');
+      return parts.slice(1).join('-'); 
+    });
+  
+    console.log('Final remainingAtributos:', remainingAtributos);
+    console.log('Tables object:', tables);
+  
+    const requestData = {
+      orderby: 'tid',
+      tables: tables,
+      filtros: filtros,
+      columns: remainingAtributos,
+      inicio: 0,
+      fim: 100
+    };
+  
+    console.log('Request data:', requestData);
+  
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/${primaryTable}/excel`,
+        requestData,
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
+          },
+          responseType: 'blob' 
+        }
+      );
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'data.xlsx'); 
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <main className={styles.main}>
         <header className={styles.cabecalho}>
@@ -163,40 +268,40 @@ export default function Home() {
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> categoria </label>
-                                <input type="checkbox" id="categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> descontinuado </label>
-                                <input type="checkbox" id="descontinuado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-descontinuado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> descricao </label>
-                                <input type="checkbox" id="descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_adicionado </label>
-                                <input type="checkbox" id="hora_adicionado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-hora_adicionado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_atualizado </label>
-                                <input type="checkbox" id="hora_atualizado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-hora_atualizado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_descontinuado </label>
-                                <input type="checkbox" id="hora_descontinuado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-hora_descontinuado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_visto </label>
-                                <input type="checkbox" id="hora_visto" className={styles.listaAtributosTabelaItemInputAmeacas}onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-hora_visto" className={styles.listaAtributosTabelaItemInputAmeacas}onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> nome </label>
-                                <input type="checkbox" id="nome" className={styles.listaAtributosTabelaItemInputAmeacas}onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-nome" className={styles.listaAtributosTabelaItemInputAmeacas}onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> risco </label>
-                                <input type="checkbox" id="risco" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-risco" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> wiki_link </label>
-                                <input type="checkbox" id="wiki_link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-wiki_link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> wiki_sumario </label>
-                                <input type="checkbox" id="wiki_sumario" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="ameacas-wiki_sumario" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -211,16 +316,16 @@ export default function Home() {
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> atid </label>
-                                <input type="checkbox" id="atid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="atributos-atid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="atributos-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> categoria </label>
-                                <input type="checkbox" id="categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="atributos-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> descrição </label>
-                                <input type="checkbox" id="descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="atributos-descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -228,20 +333,20 @@ export default function Home() {
                         </li>
                         <li className={styles.listaAtributosTabelaItem}>
                           <div className={styles.divlistaAtributosTabelaItemLabel}>
-                            <label htmlFor="OutrosNomes" className={styles.listaAtributosTabelaItemLabel}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z"/></svg> OutrosNomes </label>
-                            <input type="checkbox" id="OutrosNomes" className={styles.listaAtributosTabelaItemInput} onChange={handleCheckboxChange}/>
+                            <label htmlFor="outrosnomes" className={styles.listaAtributosTabelaItemLabel}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z"/></svg> OutrosNomes </label>
+                            <input type="checkbox" id="outrosnomes" className={styles.listaAtributosTabelaItemInput} onChange={handleCheckboxChange}/>
                           </div>
-                          {selectedTables.includes('OutrosNomes') && (
+                          {selectedTables.includes('outrosnomes') && (
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> onid </label>
-                                <input type="checkbox" id="onid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="outrosnomes-onid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="outrosnomes-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> Nomes </label>
-                                <input type="checkbox" id="nomes" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="outrosnomes-nomes" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -256,25 +361,25 @@ export default function Home() {
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> nid </label>
-                                <input type="checkbox" id="nid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-nid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> canal </label>
-                                <input type="checkbox" id="canal" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-canal" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_adicionado </label>
-                                <input type="checkbox" id="hora_adicionado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-hora_adicionado" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> icone </label>
-                                <input type="checkbox" id="icone" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-icone" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> link </label>
-                                <input type="checkbox" id="link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> titulo </label>
-                                <input type="checkbox" id="titulo" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="novidades-titulo" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -289,19 +394,19 @@ export default function Home() {
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> relid </label>
-                                <input type="checkbox" id="relid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="relacionados-relid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="relacionados-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> categoria </label>
-                                <input type="checkbox" id="categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="relacionados-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> hora_link </label>
-                                <input type="checkbox" id="hora_link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="relacionados-hora_link" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> nome </label>
-                                <input type="checkbox" id="nome" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="relacionados-nome" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> risco </label>
                                 <input type="checkbox" id="risco" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
@@ -319,16 +424,16 @@ export default function Home() {
                             <div className={styles.divAtributosAmeacas}>
                               <ul className={styles.listaAtributosTabelaAmeacas}>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> ttpsid </label>
-                                <input type="checkbox" id="ttpsid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticasETecnicas-ttpsid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> categoria </label>
-                                <input type="checkbox" id="categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticasETecnicas-categoria" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> descricao </label>
-                                <input type="checkbox" id="descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticasETecnicas-descricao" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                                 <li className={styles.listaAtributosTabelaItemAmeaca}> <label htmlFor="Atributameacas" className={styles.listaAtributosTabelaItemLabelAmeacas}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg> tid </label>
-                                <input type="checkbox" id="tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
+                                <input type="checkbox" id="taticasETecnicas-tid" className={styles.listaAtributosTabelaItemInputAmeacas} onChange={handleCheckboxChangeAtributos}/>
                                 </li>
                               </ul>
                             </div>
@@ -419,7 +524,7 @@ export default function Home() {
                 </div>
               </div>
               <button className={styles.buttonGerar} onClick={handleSubmit} >Gerar</button>
-              <button className={styles.buttonDownload}>Download</button>
+              <button className={styles.buttonDownload} onClick={handleSubmitExcel}>Download</button>
             </div>
         </div>
     </main>
