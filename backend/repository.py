@@ -47,10 +47,11 @@ def get_column_join(query: query.Query, model, columns):
 
 def filtrar_atributos(
     query,
+    model,
     filtros,
 ):
     for coluna, filtro in filtros.items():
-        atrib = getattr(Ameacas, coluna)
+        atrib = getattr(model, coluna)
         if type(atrib.type) == Date:
             query = query.filter(
                 atrib == datetime.datetime.strptime(filtro, "%Y-%m-%d")
@@ -94,7 +95,7 @@ def realizar_consulta(
     # fazer join
     consulta = get_model(consulta, model, tables)
     # fazer filtros
-    consulta = filtrar_atributos(consulta, filtros)
+    consulta = filtrar_atributos(consulta,model, filtros)
 
     return consulta
 
