@@ -32,6 +32,12 @@ export default function Home() {
     }
   };
 
+  const handleClearFilter = () => {
+    setFilters({});
+    setCurrentFilter("");
+    setSelectedAttribute("");
+  };
+
   const handleCheckboxChange = (event) => {
     const { id, checked } = event.target;
   
@@ -537,6 +543,7 @@ export default function Home() {
                 </div>
               </div>
               <button onClick={handleApplyFilter} className={styles.applyFilterButton}>Aplicar Filtro</button>
+              <button onClick={handleClearFilter} className={styles.clearFilterButton}>Limpar Filtro</button>
               <button className={styles.buttonGerar} onClick={handleSubmit} >Gerar</button>
               <button className={styles.buttonDownload} onClick={handleSubmitExcel}>Download</button>
             </div>
