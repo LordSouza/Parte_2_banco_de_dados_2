@@ -13,6 +13,9 @@ export default function Home() {
   const [responseData, setResponseData] = useState([]);
   const [keys, setKeys] = useState([]);
   const [values, setValues] = useState([]);
+  const [tables, setTables] = useState({});
+  const [filters, setFilters] = useState({});
+  const [currentFilter, setCurrentFilter] = useState("");
 
 
   const handleCheckboxChange = (event) => {
@@ -53,6 +56,23 @@ export default function Home() {
     });
   };
   
+  const handleFilterChange = (event) => {
+    setCurrentFilter(event.target.value);
+  };
+
+  const handleApplyFilter = () => {
+    const selectedAtributo = selectedAtributos.find(attr => attr);
+    if (selectedAtributo) {
+      const parts = selectedAtributo.split('-');
+      const atributoName = parts.slice(1).join('-');
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        [atributoName]: currentFilter
+      }));
+      setCurrentFilter("");
+    }
+  };
+  
   
 
   const handleCheckboxChangeAtributos = (event) => {
@@ -62,11 +82,35 @@ export default function Home() {
         ? [...prevSelectedAtributos, id]
         : prevSelectedAtributos.filter((atributo) => atributo !== id);
   
-      extractAtributoNomes(); // Atualiza os nomes dos atributos
+      extractAtributoNomes(updatedAtributos);
+      updateTablesState(id, checked);
   
       return updatedAtributos;
     });
   };
+
+  const updateTablesState = (atributo, checked) => {
+    const [table, attr] = atributo.split('-');
+    setTables((prevTables) => {
+      const updatedTables = { ...prevTables };
+      if (checked) {
+        if (!updatedTables[table]) {
+          updatedTables[table] = [];
+        }
+        updatedTables[table].push(attr);
+      } else {
+        if (updatedTables[table]) {
+          updatedTables[table] = updatedTables[table].filter(a => a !== attr);
+          if (updatedTables[table].length === 0) {
+            delete updatedTables[table];
+          }
+        }
+      }
+      return updatedTables;
+    });
+  };
+  
+  
 
   useEffect(() => {
     extractAtributoNomes();
@@ -85,8 +129,6 @@ export default function Home() {
       setError("Sem tabela principal");
       return;
     }
-
-    const filtros = {};
 
     let remainingAtributos = [...selectedAtributos];
     console.log('Initial remainingAtributos:', remainingAtributos);
@@ -122,7 +164,7 @@ export default function Home() {
     const requestData = {
       orderby: 'tid',
       tables: tables,
-      filtros: filtros,
+      filtros: filters,
       columns: remainingAtributos,
       inicio: 0,
       fim: 10
@@ -520,9 +562,10 @@ export default function Home() {
                 
                 <div className={styles.labelInputFiltro}>
                   <label for="nome" className={styles.labelFiltro}> <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#068b95"><path d="M400-240v-80h160v80H400ZM240-440v-80h480v80H240ZM120-640v-80h720v80H120Z"/></svg> Filtrar por valor:</label>
-                  <input type="text" name="nome" className={styles.inputFiltro}></input>
+                  <input type="text" name="nome" value={currentFilter} onChange={handleFilterChange} className={styles.inputFiltro}></input>
                 </div>
               </div>
+              <button onClick={handleApplyFilter} className={styles.applyFilterButton}>Aplicar Filtro</button>
               <button className={styles.buttonGerar} onClick={handleSubmit} >Gerar</button>
               <button className={styles.buttonDownload} onClick={handleSubmitExcel}>Download</button>
             </div>
